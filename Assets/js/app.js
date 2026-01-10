@@ -9,14 +9,14 @@ document.addEventListener("DOMContentLoaded", function() {
   const productGrid = document.getElementById("productGrid");
   const modalTitle = document.getElementById("modalTitle");
 
-  let editingProductId = null; // track edit
+  let editingProductId = null; // Track edit product
 
   // Open modal for Add
   addProductBtn.addEventListener("click", () => {
+    editingProductId = null;
     modal.classList.remove("hidden");
     modalTitle.innerText = "Add Product";
     productForm.reset();
-    
   });
 
   // Close modal
@@ -51,46 +51,51 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  // Delete product
+  // DELETE
   window.deleteProduct = function(id) {
-    fetch(apiURL + "/" + id, { method: "DELETE" })
+    fetch(`${apiURL}/${id}`, { method: "DELETE" })
       .then(res => res.json())
-      .then(() => showProducts());
+      .then(() => {
+        alert("Product Deleted");
+        showProducts();
+      });
   }
 
-  // Edit product
+  // EDIT
   window.editProduct = function(id) {
-    fetch(apiURL + "/" + id)
+    fetch(`${apiURL}/${id}`)
       .then(res => res.json())
       .then(p => {
+        editingProductId = id;
         modal.classList.remove("hidden");
         modalTitle.innerText = "Edit Product";
         document.getElementById("productName").value = p.title;
         document.getElementById("productPrice").value = p.price;
         document.getElementById("productCategory").value = p.category;
-        editingProductId = id;
       });
   }
 
-  // Form submit
+  // FORM SUBMIT
   productForm.addEventListener("submit", function(e) {
     e.preventDefault();
+
     const product = {
       title: document.getElementById("productName").value,
       price: Number(document.getElementById("productPrice").value),
       category: document.getElementById("productCategory").value,
-      description: "New product"
+      description: "Added from ShopManage"
     };
 
     if (editingProductId) {
       // PUT update
-      fetch(apiURL + "/" + editingProductId, {
+      fetch(`${apiURL}/${editingProductId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product)
       })
       .then(res => res.json())
       .then(() => {
+        alert("Product Updated");
         modal.classList.add("hidden");
         productForm.reset();
         editingProductId = null;
@@ -98,13 +103,14 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     } else {
       // POST add
-      fetch(apiURL + "/add", {
+      fetch(`${apiURL}/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product)
       })
       .then(res => res.json())
       .then(() => {
+        alert("Product Added");
         modal.classList.add("hidden");
         productForm.reset();
         showProducts();
